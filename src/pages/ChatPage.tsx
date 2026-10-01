@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../types';
 import { getChats, saveChats, getSettings, generateId } from '../storage';
+import { isFirebaseConfigured } from '../firebase';
+import {
+  listenToMessages,
+  sendMessageAsUser,
+  createChatSession,
+} from '../services/firebaseService';
 
 interface ChatPageProps {
   sessionId?: string;
@@ -14,27 +20,33 @@ const ChatPage: React.FC<ChatPageProps> = ({ sessionId }) => {
   const [chatId, setChatId] = useState(sessionId || '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const settings = getSettings();
+  const useFirebase = isFirebaseConfigured();
 
   useEffect(() => {
     if (sessionId) {
-      const chats = getChats();
-      const existing = chats.find(c => c.id === sessionId);
-      if (existing) {
-        setMessages(existing.messages);
-        setUserName(existing.userName);
+      if (useFirebase) {
+        const unsubscribe = listenToMessages(sessionId, (msgs) => {
+          setMessages(msgs);
+        });
         setNameSet(true);
         setChatId(sessionId);
+        return () => unsubscribe();
+      } else {
+        const chats = getChats();
+        const existing = chats.find(c => c.id === sessionId);
+        if (existing) {
+          setMessages(existing.messages);
+          setUserName(existing.userName);
+          setNameSet(true);
+          setChatId(sessionId);
+        }
       }
     }
-  }, [sessionId]);
+  }, [sessionId, useFirebase]);
 
+  // Poll for new messages from owner (localStorage fallback)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Poll for new messages from owner
-  useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || useFirebase) return;
     const interval = setInterval(() => {
       const chats = getChats();
       const chat = chats.find(c => c.id === chatId);
@@ -43,59 +55,85 @@ const ChatPage: React.FC<ChatPageProps> = ({ sessionId }) => {
       }
     }, 2000);
     return () => clearInterval(interval);
-  }, [chatId]);
+  }, [chatId, useFirebase]);
 
-  const handleStartChat = () => {
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleStartChat = async () => {
     if (!userName.trim()) return;
-    const id = generateId();
-    setChatId(id);
-    setNameSet(true);
 
-    const initialMessage: Message = {
-      id: generateId(),
-      sender: 'owner',
-      text: settings.autoReplyMessage || 'Thank you for reaching out. I will respond as soon as possible.',
-      timestamp: Date.now(),
-    };
+    if (useFirebase) {
+      // Firebase mode
+      const id = await createChatSession(
+        userName.trim(),
+        settings.autoReplyMessage || 'Thank you for reaching out. I will respond as soon as possible.'
+      );
+      setChatId(id);
+      setNameSet(true);
 
-    const newChat = {
-      id,
-      userName: userName.trim(),
-      messages: [initialMessage],
-      lastMessage: initialMessage.text,
-      lastUpdated: Date.now(),
-      unread: true,
-    };
+      // Listen for messages
+      const unsubscribe = listenToMessages(id, (msgs) => {
+        setMessages(msgs);
+      });
+      return () => unsubscribe();
+    } else {
+      // localStorage fallback
+      const id = generateId();
+      setChatId(id);
+      setNameSet(true);
 
-    const chats = getChats();
-    chats.unshift(newChat);
-    saveChats(chats);
-    setMessages([initialMessage]);
+      const initialMessage: Message = {
+        id: generateId(),
+        sender: 'owner',
+        text: settings.autoReplyMessage || 'Thank you for reaching out. I will respond as soon as possible.',
+        timestamp: Date.now(),
+      };
+
+      const newChat = {
+        id,
+        userName: userName.trim(),
+        messages: [initialMessage],
+        lastMessage: initialMessage.text,
+        lastUpdated: Date.now(),
+        unread: true,
+      };
+
+      const chats = getChats();
+      chats.unshift(newChat);
+      saveChats(chats);
+      setMessages([initialMessage]);
+    }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() || !chatId) return;
 
-    const newMsg: Message = {
-      id: generateId(),
-      sender: 'user',
-      text: input.trim(),
-      timestamp: Date.now(),
-    };
+    if (useFirebase) {
+      await sendMessageAsUser(chatId, input.trim());
+      setInput('');
+    } else {
+      const newMsg: Message = {
+        id: generateId(),
+        sender: 'user',
+        text: input.trim(),
+        timestamp: Date.now(),
+      };
 
-    const updatedMessages = [...messages, newMsg];
-    setMessages(updatedMessages);
-    setInput('');
+      const updatedMessages = [...messages, newMsg];
+      setMessages(updatedMessages);
+      setInput('');
 
-    // Update chat in storage
-    const chats = getChats();
-    const chatIndex = chats.findIndex(c => c.id === chatId);
-    if (chatIndex !== -1) {
-      chats[chatIndex].messages = updatedMessages;
-      chats[chatIndex].lastMessage = newMsg.text;
-      chats[chatIndex].lastUpdated = Date.now();
-      chats[chatIndex].unread = true;
-      saveChats(chats);
+      const chats = getChats();
+      const chatIndex = chats.findIndex(c => c.id === chatId);
+      if (chatIndex !== -1) {
+        chats[chatIndex].messages = updatedMessages;
+        chats[chatIndex].lastMessage = newMsg.text;
+        chats[chatIndex].lastUpdated = Date.now();
+        chats[chatIndex].unread = true;
+        saveChats(chats);
+      }
     }
   };
 
@@ -134,6 +172,12 @@ const ChatPage: React.FC<ChatPageProps> = ({ sessionId }) => {
           >
             Start Chat
           </button>
+          {useFirebase && (
+            <p className="text-center text-xs text-green-600 mt-3">🟢 Connected to Firebase (Real-time)</p>
+          )}
+          {!useFirebase && (
+            <p className="text-center text-xs text-amber-600 mt-3">🟡 Using local storage (Demo mode)</p>
+          )}
         </div>
       </div>
     );
@@ -154,8 +198,8 @@ const ChatPage: React.FC<ChatPageProps> = ({ sessionId }) => {
             <p className="text-red-100 text-sm">Emergency Contact</p>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-            <span className="text-sm text-red-100">Online</span>
+            <span className={`w-2 h-2 rounded-full animate-pulse ${useFirebase ? 'bg-green-400' : 'bg-yellow-400'}`}></span>
+            <span className="text-sm text-red-100">{useFirebase ? 'Live' : 'Demo'}</span>
           </div>
         </div>
       </div>
