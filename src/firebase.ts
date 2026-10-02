@@ -4,12 +4,14 @@ import { getFirestore } from 'firebase/firestore';
 // ⚠️ REPLACE THESE WITH YOUR ACTUAL FIREBASE CONFIG
 // Get from: Firebase Console → Project Settings → General → Your Apps → Web App
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "saferch-app.firebaseapp.com",
-  projectId: "saferch-app",
-  storageBucket: "saferch-app.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDqmnV9LX8UWseQuZnJ2vEpnBUl35YIttQ",
+  authDomain: "safereach-2a838.firebaseapp.com",
+  projectId: "safereach-2a838",
+  storageBucket: "safereach-2a838.firebasestorage.app",
+  messagingSenderId: "483887675543",
+  appId: "1:483887675543:web:0b89bdfeb61f31574d11d2",
+  measurementId: "G-7JWT28C5F2"
+
 };
 
 // Initialize Firebase

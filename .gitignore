@@ -3,3 +3,17 @@ node_modules/
 dist/
 build/
 *.log
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Flutter project (not part of the web build) - 1GB, would break the push
+saferch_app/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
