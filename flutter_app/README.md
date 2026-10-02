@@ -1,22 +1,23 @@
 # 🛡️ SafeReach - Emergency Contact System
 
-## Complete System Architecture
+## System Overview
 
 ```
-┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
-│   QR Code       │  scan   │   Website        │  send   │   Firebase      │
-│   (printed)     │ ──────► │   (React)        │ ──────► │   Firestore     │
-│                 │         │   /chat page     │         │   (Real-time)   │
-└─────────────────┘         └──────────────────┘         └────────┬────────┘
-                                                                  │
-                                                                  │ receive
-                                                                  ▼
-                                                         ┌─────────────────┐
-                                                         │   Flutter App   │
-                                                         │   (iOS/Android) │
-                                                         │   Owner device  │
-                                                         └─────────────────┘
+┌─────────────────┐              ┌──────────────────┐              ┌─────────────────┐
+│   User's Phone  │   Visit      │   Website        │   Firebase   │   Flutter App   │
+│   (Browser)     │ ──────────► │   (React)        │ ──────────► │   (iOS/Android) │
+│                 │   website    │   /chat page     │  Real-time  │   Owner device  │
+└─────────────────┘              └──────────────────┘              └─────────────────┘
+     User opens              User sends msg              Owner receives &
+     website directly        from browser                replies from app
 ```
+
+**Simple Flow:**
+1. User visits the website (share the link with them)
+2. User enters their name and sends a message
+3. Owner receives the message instantly on their Flutter app
+4. Owner replies from the app
+5. User sees the reply on the website
 
 ---
 
@@ -42,7 +43,7 @@
 - Flutter (by Dart Code)
 - Firebase Snippets
 - Error Lens
-- Pretty TypeScript Errors
+- Tailwind CSS IntelliSense
 ```
 
 ### 3. Firebase Setup (Free tier is enough)
@@ -60,10 +61,10 @@
 
 ```bash
 # Create the Flutter project
-flutter create saferch_app
+flutter create saferch_app --org com.saferch
 cd saferch_app
 
-# Replace lib/ folder with the code from this repository
+# Replace lib/ folder with the code from flutter_app/ folder
 # Then install dependencies:
 flutter pub get
 
@@ -96,18 +97,16 @@ saferch/
 │   │   ├── main.dart
 │   │   ├── models/
 │   │   ├── services/
-│   │   ├── screens/
-│   │   └── widgets/
+│   │   └── screens/
 │   ├── pubspec.yaml
 │   ├── android/
 │   └── ios/
 │
-├── website/              ← React website (this project)
-│   ├── src/
-│   │   ├── App.tsx
-│   │   ├── pages/
-│   │   └── services/
-│   └── package.json
+├── src/                  ← React website
+│   ├── App.tsx
+│   ├── firebase.ts       ← YOUR WEB CONFIG HERE
+│   ├── pages/
+│   └── services/
 │
 └── README.md             ← This file
 ```
@@ -129,10 +128,6 @@ service cloud.firestore {
         allow read, write: if true;
       }
     }
-    // Settings are per-owner
-    match /settings/{ownerId} {
-      allow read, write: if true;
-    }
   }
 }
 ```
@@ -144,7 +139,7 @@ service cloud.firestore {
 ## 🚀 How It Works
 
 ### User Flow (Website):
-1. User scans QR code → opens website
+1. User visits the website URL (you share this link with them)
 2. Enters their name
 3. Starts chatting in real-time
 4. Messages appear instantly on owner's app
@@ -154,7 +149,7 @@ service cloud.firestore {
 2. Sees all incoming chats
 3. Replies to messages
 4. Manages emergency contacts
-5. Views/shares QR code
+5. Configures auto-reply settings
 
 ---
 
@@ -166,7 +161,6 @@ service cloud.firestore {
 | **Chat List** | All received conversations |
 | **Chat Detail** | Individual chat with reply |
 | **Settings** | Profile, contacts, preferences |
-| **QR Code** | View and share your QR code |
 
 ---
 

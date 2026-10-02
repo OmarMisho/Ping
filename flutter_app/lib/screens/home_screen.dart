@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../services/chat_service.dart';
 import 'chat_list_screen.dart';
 import 'settings_screen.dart';
-import 'qr_code_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +17,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const ChatListScreen(),
     const SettingsScreen(),
-    const QRCodeScreen(),
   ];
 
   @override
@@ -44,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -60,12 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   activeIcon: Icons.settings,
                   label: 'Settings',
                   index: 1,
-                ),
-                _buildNavItem(
-                  icon: Icons.qr_code_2_outlined,
-                  activeIcon: Icons.qr_code_2,
-                  label: 'QR Code',
-                  index: 2,
                 ),
               ],
             ),

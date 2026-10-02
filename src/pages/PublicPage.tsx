@@ -45,6 +45,25 @@ const PublicPage: React.FC = () => {
           </p>
         </div>
 
+        {/* How it works */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 mb-8 border border-white/50">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">How it works:</h3>
+          <div className="space-y-2 text-sm text-gray-600">
+            <div className="flex items-start gap-2">
+              <span className="bg-red-100 text-red-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+              <span>Visit this website</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="bg-red-100 text-red-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+              <span>Start a chat and send your message</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="bg-red-100 text-red-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+              <span>The owner receives it instantly on their app</span>
+            </div>
+          </div>
+        </div>
+
         {/* CTA Button */}
         <button
           onClick={handleStartChat}

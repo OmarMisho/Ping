@@ -20,10 +20,6 @@ dependencies:
   firebase_auth: ^4.15.3
   cloud_firestore: ^4.13.6
 
-  # QR Code
-  qr_flutter: ^4.1.0
-  mobile_scanner: ^3.5.5
-
   # State Management
   provider: ^6.1.1
 

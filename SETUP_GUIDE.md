@@ -3,12 +3,12 @@
 ## What You're Building
 
 ```
-┌──────────────┐     QR Scan     ┌──────────────┐    Firebase     ┌──────────────┐
-│   QR Code    │ ──────────────► │   Website    │ ─────────────► │  Flutter App │
-│  (Printed)   │                 │  (React)     │   Real-time    │  (iOS/Andrd) │
-└──────────────┘                 └──────────────┘                └──────────────┘
-     User scans              User sends msg              Owner receives &
-     QR with phone           from browser                replies from app
+┌──────────────┐   Visit URL    ┌──────────────┐    Firebase     ┌──────────────┐
+│   User's     │ ─────────────► │   Website    │ ─────────────► │  Flutter App │
+│   Browser    │                │  (React)     │   Real-time    │  (iOS/Andrd) │
+└──────────────┘                └──────────────┘                └──────────────┘
+     User visits            User sends msg              Owner receives &
+     your website           from browser                replies from app
 ```
 
 ---
@@ -184,10 +184,11 @@ flutter run -d chrome
 
 ### Test 2: Real-time with Firebase
 1. Set up Firebase (steps above)
-2. Open website in one browser tab
-3. Open Flutter app on phone/emulator
-4. Send message from website → Appears instantly in app
-5. Reply from app → Appears instantly on website
+2. Deploy website to a URL (Vercel, Netlify, etc.)
+3. Open website in one browser tab
+4. Open Flutter app on phone/emulator
+5. Send message from website → Appears instantly in app
+6. Reply from app → Appears instantly on website
 
 ---
 
@@ -247,8 +248,7 @@ saferch/
 │   │       ├── home_screen.dart
 │   │       ├── chat_list_screen.dart
 │   │       ├── chat_detail_screen.dart
-│   │       ├── settings_screen.dart
-│   │       └── qr_code_screen.dart
+│   │       └── settings_screen.dart
 │   ├── pubspec.yaml          ← Dependencies
 │   ├── android/
 │   │   └── app/
@@ -263,9 +263,9 @@ saferch/
 │   ├── services/
 │   │   └── firebaseService.ts
 │   └── pages/
-│       ├── PublicPage.tsx    ← QR landing page
+│       ├── PublicPage.tsx    ← Landing page
 │       ├── ChatPage.tsx      ← User chat
 │       └── OwnerDashboard.tsx ← Owner interface
 │
-└── README.md
+└── SETUP_GUIDE.md            ← This file
 ```

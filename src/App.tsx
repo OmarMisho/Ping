@@ -8,7 +8,7 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <Routes>
-        {/* Public-facing page (accessed via QR code) */}
+        {/* Public-facing page */}
         <Route path="/" element={<PublicPage />} />
         
         {/* Chat page for users */}
@@ -63,7 +63,7 @@ const DemoNavigation: React.FC = () => {
               </span>
               <div>
                 <p className="font-medium text-gray-800">Public Page</p>
-                <p className="text-xs text-gray-400">QR code landing page</p>
+                <p className="text-xs text-gray-400">Emergency landing page</p>
               </div>
             </Link>
             <Link
