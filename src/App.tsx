@@ -1,27 +1,24 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import PublicPage from './pages/PublicPage';
 import ChatPage from './pages/ChatPage';
 import OwnerDashboard from './pages/OwnerDashboard';
+import OwnerLoginPage from './pages/OwnerLoginPage';
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
-        {/* Public-facing page */}
         <Route path="/" element={<PublicPage />} />
-        
-        {/* Chat page for users */}
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/chat/:sessionId" element={<ChatPage />} />
-        
-        {/* Owner dashboard (the app interface) */}
+
+        {/* Unique owner chat URL */}
+        <Route path="/c/:ownerId/:qrId" element={<ChatPage />} />
+        <Route path="/owner-login" element={<OwnerLoginPage />} />
         <Route path="/owner" element={<OwnerDashboard />} />
       </Routes>
 
-      {/* Floating navigation for demo purposes */}
       <DemoNavigation />
-    </HashRouter>
+    </BrowserRouter>
   );
 };
 
@@ -63,7 +60,7 @@ const DemoNavigation: React.FC = () => {
               </span>
               <div>
                 <p className="font-medium text-gray-800">Public Page</p>
-                <p className="text-xs text-gray-400">Emergency landing page</p>
+                <p className="text-xs text-gray-400">QR code landing page</p>
               </div>
             </Link>
             <Link

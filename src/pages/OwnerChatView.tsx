@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatSession, Message } from '../types';
-import { getChats, saveChats, generateId } from '../storage';
+import {
+  listenToMessages,
+  sendMessageAsOwner,
+} from '../services/firebaseService';
 
 interface OwnerChatViewProps {
   chat: ChatSession;
@@ -8,54 +11,57 @@ interface OwnerChatViewProps {
   onRefresh: () => void;
 }
 
-const OwnerChatView: React.FC<OwnerChatViewProps> = ({ chat, onBack, onRefresh }) => {
-  const [messages, setMessages] = useState<Message[]>(chat.messages);
+const OwnerChatView: React.FC<OwnerChatViewProps> = ({
+  chat,
+  onBack,
+  onRefresh,
+}) => {
+  const [messages, setMessages] = useState<Message[]>(chat.messages || []);
   const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Listen to Firebase messages in real time
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const unsubscribe = listenToMessages(chat.id, (updatedMessages) => {
+      setMessages(updatedMessages);
+      onRefresh();
+    });
 
-  // Poll for new messages from user
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const chats = getChats();
-      const updated = chats.find(c => c.id === chat.id);
-      if (updated) {
-        setMessages(updated.messages);
-        onRefresh();
-      }
-    }, 2000);
-    return () => clearInterval(interval);
+    return unsubscribe;
   }, [chat.id, onRefresh]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  // Scroll to newest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth',
+    });
+  }, [messages]);
 
-    const newMsg: Message = {
-      id: generateId(),
-      sender: 'owner',
-      text: input.trim(),
-      timestamp: Date.now(),
-    };
+  // Send owner reply
+  const handleSend = async () => {
+    const text = input.trim();
 
-    const updatedMessages = [...messages, newMsg];
-    setMessages(updatedMessages);
-    setInput('');
+    if (!text || sending) return;
 
-    // Update chat in storage
-    const chats = getChats();
-    const chatIndex = chats.findIndex(c => c.id === chat.id);
-    if (chatIndex !== -1) {
-      chats[chatIndex].messages = updatedMessages;
-      chats[chatIndex].lastMessage = newMsg.text;
-      chats[chatIndex].lastUpdated = Date.now();
-      saveChats(chats);
+    try {
+      setSending(true);
+
+      await sendMessageAsOwner(chat.id, text);
+
+      setInput('');
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    } finally {
+      setSending(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  // Send with Enter
+  const handleKeyPress = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -69,17 +75,35 @@ const OwnerChatView: React.FC<OwnerChatViewProps> = ({ chat, onBack, onRefresh }
         <button
           onClick={onBack}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          title="Back"
         >
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-5 h-5 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
+
         <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">
           {chat.userName.charAt(0).toUpperCase()}
         </div>
+
         <div className="flex-1">
-          <h2 className="font-semibold text-gray-800">{chat.userName}</h2>
-          <p className="text-xs text-gray-400">Emergency Chat</p>
+          <h2 className="font-semibold text-gray-800">
+            {chat.userName}
+          </h2>
+
+          <p className="text-xs text-gray-400">
+            Emergency Chat
+          </p>
         </div>
       </div>
 
@@ -89,7 +113,11 @@ const OwnerChatView: React.FC<OwnerChatViewProps> = ({ chat, onBack, onRefresh }
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${msg.sender === 'owner' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${
+                msg.sender === 'owner'
+                  ? 'justify-end'
+                  : 'justify-start'
+              }`}
             >
               <div
                 className={`max-w-[80%] px-4 py-2 rounded-2xl ${
@@ -98,13 +126,28 @@ const OwnerChatView: React.FC<OwnerChatViewProps> = ({ chat, onBack, onRefresh }
                     : 'bg-white text-gray-800 shadow-sm rounded-bl-md'
                 }`}
               >
-                <p className="text-sm leading-relaxed">{msg.text}</p>
-                <p className={`text-xs mt-1 ${msg.sender === 'owner' ? 'text-red-200' : 'text-gray-400'}`}>
-                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <p className="text-sm leading-relaxed">
+                  {msg.text}
+                </p>
+
+                <p
+                  className={`text-xs mt-1 ${
+                    msg.sender === 'owner'
+                      ? 'text-red-200'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  {new Date(
+                    msg.timestamp
+                  ).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </p>
               </div>
             </div>
           ))}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -116,18 +159,53 @@ const OwnerChatView: React.FC<OwnerChatViewProps> = ({ chat, onBack, onRefresh }
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder="Type your reply..."
-            className="flex-1 px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+            disabled={sending}
+            className="flex-1 px-4 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 text-sm disabled:opacity-60"
           />
+
           <button
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || sending}
             className="w-11 h-11 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 transition-colors disabled:opacity-50"
+            title="Send"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            {sending ? (
+              <svg
+                className="w-5 h-5 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
+            )}
           </button>
         </div>
       </div>

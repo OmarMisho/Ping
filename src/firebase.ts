@@ -1,8 +1,14 @@
 import { initializeApp } from 'firebase/app';
+import {
+  getAuth,
+  signInAnonymously,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  User,
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// ⚠️ REPLACE THESE WITH YOUR ACTUAL FIREBASE CONFIG
-// Get from: Firebase Console → Project Settings → General → Your Apps → Web App
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDqmnV9LX8UWseQuZnJ2vEpnBUl35YIttQ",
   authDomain: "safereach-2a838.firebaseapp.com",
@@ -11,14 +17,77 @@ const firebaseConfig = {
   messagingSenderId: "483887675543",
   appId: "1:483887675543:web:0b89bdfeb61f31574d11d2",
   measurementId: "G-7JWT28C5F2"
-
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Firestore
 export const db = getFirestore(app);
 
+// Firebase Authentication
+export const auth = getAuth(app);
+export async function registerOwner(
+  email: string,
+  password: string
+): Promise<User> {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase is not configured.');
+  }
+
+  const result = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+
+  return result.user;
+}
+
+export async function loginOwner(
+  email: string,
+  password: string
+): Promise<User> {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase is not configured.');
+  }
+
+  const result = await signInWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+
+  return result.user;
+}
 // Check if Firebase is properly configured
 export const isFirebaseConfigured = (): boolean => {
   return firebaseConfig.apiKey !== "YOUR_API_KEY";
 };
+
+/*
+ * Sign in the visitor anonymously.
+ *
+ * If the browser already has an anonymous Firebase
+ * session, Firebase restores it automatically.
+ */
+export async function signInAnonymousUser(): Promise<User> {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase is not configured.');
+  }
+
+  if (auth.currentUser) {
+    return auth.currentUser;
+  }
+
+  const result = await signInAnonymously(auth);
+
+  return result.user;
+}
+
+/*
+ * Get the current Firebase visitor UID.
+ */
+export function getCurrentUserId(): string | null {
+  return auth.currentUser?.uid || null;
+}

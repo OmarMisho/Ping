@@ -7,6 +7,7 @@ import {
   deleteDoc,
   onSnapshot,
   query,
+  where,
   orderBy,
   serverTimestamp,
   Timestamp,
@@ -19,26 +20,35 @@ import { Message, ChatSession } from '../types';
 // Use this when Firebase is configured
 // ============================================
 
-export function listenToChats(callback: (chats: ChatSession[]) => void): () => void {
+export function listenToChats(
+  ownerId: string,
+  callback: (chats: ChatSession[]) => void
+): () => void {
   if (!isFirebaseConfigured()) {
-    console.warn('Firebase not configured. Using localStorage fallback.');
+    console.warn('Firebase not configured.');
     return () => {};
   }
 
-  const q = query(collection(db, 'chats'), orderBy('lastUpdated', 'desc'));
+  const q = query(
+    collection(db, 'chats'),
+    where('ownerId', '==', ownerId),
+    orderBy('lastUpdated', 'desc')
+  );
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const chats: ChatSession[] = snapshot.docs.map((doc) => {
       const data = doc.data();
+
       return {
         id: doc.id,
-        userName: data.userName || 'Unknown',
-        messages: [], // Messages loaded separately
+        userName: data.userName || 'Anonymous',
+        messages: [],
         lastMessage: data.lastMessage || '',
         lastUpdated: data.lastUpdated?.toDate?.()?.getTime() || Date.now(),
         unread: data.unread || false,
       };
     });
+
     callback(chats);
   });
 
@@ -114,22 +124,18 @@ export async function sendMessageAsOwner(
 }
 
 export async function createChatSession(
-  userName: string,
-  initialMessage: string
+  ownerId: string,
+  visitorId: string
 ): Promise<string> {
   if (!isFirebaseConfigured()) return '';
 
   const chatRef = await addDoc(collection(db, 'chats'), {
-    userName,
-    lastMessage: initialMessage,
+    ownerId,
+    visitorId,
+    userName: 'Anonymous',
+    lastMessage: '',
     lastUpdated: serverTimestamp(),
-    unread: true,
-  });
-
-  await addDoc(collection(db, 'chats', chatRef.id, 'messages'), {
-    text: initialMessage,
-    sender: 'owner',
-    timestamp: serverTimestamp(),
+    unread: false,
   });
 
   return chatRef.id;
