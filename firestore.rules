@@ -1,0 +1,98 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function owner(uid) {
+      return signedIn() && request.auth.uid == uid && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function visitor(uid) {
+      return signedIn() && request.auth.uid == uid && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    match /owners/{uid} {
+      allow read, write: if owner(uid);
+    }
+
+    match /qrCodes/{qrId} {
+      // Anonymous visitors need to resolve the QR before opening a chat.
+      allow get: if signedIn();
+
+      allow create: if owner(request.resource.data.ownerUid)
+        && request.resource.data.qrId == qrId
+        && request.resource.data.active == true;
+
+      allow update: if owner(resource.data.ownerUid)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.qrId == qrId;
+
+      allow delete: if owner(resource.data.ownerUid);
+    }
+
+    match /chats/{chatId} {
+      allow create: if visitor(request.resource.data.visitorId)
+        && request.resource.data.ownerUid is string
+        && request.resource.data.ownerId is string
+        && request.resource.data.qrId is string
+        && request.resource.data.visitorMessageCount == 0
+        && request.resource.data.expiresAt > request.time
+        && get(/databases/$(database)/documents/qrCodes/$(request.resource.data.qrId)).data.active == true
+        && get(/databases/$(database)/documents/qrCodes/$(request.resource.data.qrId)).data.ownerUid == request.resource.data.ownerUid
+        && get(/databases/$(database)/documents/qrCodes/$(request.resource.data.qrId)).data.ownerId == request.resource.data.ownerId;
+
+      allow read: if owner(resource.data.ownerUid) || visitor(resource.data.visitorId);
+
+      // Owner can update the chat metadata when replying/marking read.
+      allow update: if owner(resource.data.ownerUid)
+        && resource.data.expiresAt > request.time
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.visitorId == resource.data.visitorId;
+
+      // Visitor may advance the counter by at most one and may not change chat identity.
+      // This prevents a visitor from resetting the 10-message counter.
+      allow update: if visitor(resource.data.visitorId)
+        && resource.data.expiresAt > request.time
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.qrId == resource.data.qrId
+        && request.resource.data.visitorId == resource.data.visitorId
+        && request.resource.data.visitorMessageCount == resource.data.visitorMessageCount + 1
+        && resource.data.visitorMessageCount < 10
+        && request.resource.data.expiresAt == resource.data.expiresAt;
+
+      allow delete: if owner(resource.data.ownerUid);
+
+      match /messages/{messageId} {
+        allow read: if owner(get(/databases/$(database)/documents/chats/$(chatId)).data.ownerUid)
+          || visitor(get(/databases/$(database)/documents/chats/$(chatId)).data.visitorId);
+
+        allow create: if (
+          owner(get(/databases/$(database)/documents/chats/$(chatId)).data.ownerUid)
+          && get(/databases/$(database)/documents/chats/$(chatId)).data.expiresAt > request.time
+          && request.resource.data.sender == 'owner'
+          && getAfter(/databases/$(database)/documents/chats/$(chatId)).data.unread == false
+          && getAfter(/databases/$(database)/documents/chats/$(chatId)).data.lastMessage == request.resource.data.text
+        ) || (
+          visitor(get(/databases/$(database)/documents/chats/$(chatId)).data.visitorId)
+          && get(/databases/$(database)/documents/chats/$(chatId)).data.expiresAt > request.time
+          && request.resource.data.sender == 'user'
+          && get(/databases/$(database)/documents/chats/$(chatId)).data.visitorMessageCount < 10
+          && getAfter(/databases/$(database)/documents/chats/$(chatId)).data.visitorMessageCount
+             == get(/databases/$(database)/documents/chats/$(chatId)).data.visitorMessageCount + 1
+          && getAfter(/databases/$(database)/documents/chats/$(chatId)).data.lastMessage == request.resource.data.text
+          && getAfter(/databases/$(database)/documents/chats/$(chatId)).data.unread == true
+        );
+
+        allow update, delete: if owner(
+          get(/databases/$(database)/documents/chats/$(chatId)).data.ownerUid
+        );
+      }
+    }
+  }
+}
