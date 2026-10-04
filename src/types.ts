@@ -11,7 +11,6 @@ export interface ChatSession {
   ownerId: string;
   qrId: string;
   qrName: string;
-  qrType: string;
   visitorId: string;
   userName: string;
   messages: Message[];
@@ -29,7 +28,6 @@ export interface QrCode {
   ownerUid: string;
   ownerId: string;
   name: string;
-  type: string;
   active: boolean;
   createdAt: number;
   updatedAt: number;

@@ -36,7 +36,6 @@ function mapChat(id: string, data: Record<string, any>): ChatSession {
     ownerId: data.ownerId || '',
     qrId: data.qrId || '',
     qrName: data.qrName || 'Emergency QR',
-    qrType: data.qrType || 'other',
     visitorId: data.visitorId || '',
     userName: data.userName || 'Anonymous',
     messages: [],
@@ -62,7 +61,6 @@ export async function getQrCode(qrId: string): Promise<QrCode | null> {
     ownerUid: data.ownerUid || '',
     ownerId: data.ownerId || '',
     name: data.name || 'Emergency QR',
-    type: data.type || 'other',
     active: data.active !== false,
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
@@ -125,30 +123,15 @@ export async function createChatSession(
   ownerId: string,
   qrId: string,
   qrName: string,
-  qrType: string,
   visitorId: string
 ): Promise<string> {
-  if (!isFirebaseConfigured()) throw new Error('Firebase is not configured.');
-  if (!ownerUid || !ownerId || !qrId || !visitorId) {
-    throw new Error('Missing chat identity information.');
-  }
-
-  const qrSnapshot = await getDoc(doc(db, 'qrCodes', qrId));
-  if (!qrSnapshot.exists()) throw new Error('QR code not found.');
-
-  const qr = qrSnapshot.data();
-  if (qr.active === false || qr.ownerUid !== ownerUid || qr.ownerId !== ownerId) {
-    throw new Error('This emergency QR code is inactive.');
-  }
-
-  const expiresAt = new Date(Date.now() + CHAT_EXPIRY_DAYS * 86400000);
+  if (!isFirebaseConfigured()) return '';
 
   const chatRef = await addDoc(collection(db, 'chats'), {
     ownerUid,
     ownerId,
     qrId,
     qrName,
-    qrType,
     visitorId,
     userName: 'Anonymous',
     lastMessage: '',
@@ -157,11 +140,14 @@ export async function createChatSession(
     unreadCount: 0,
     visitorMessageCount: 0,
     createdAt: serverTimestamp(),
-    expiresAt,
+    expiresAt: Timestamp.fromMillis(
+      Date.now() + 14 * 24 * 60 * 60 * 1000
+    ),
   });
 
   return chatRef.id;
 }
+
 
 export async function sendMessageAsUser(chatId: string, text: string): Promise<void> {
   if (!isFirebaseConfigured()) throw new Error('Firebase is not configured.');

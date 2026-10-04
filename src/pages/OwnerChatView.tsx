@@ -73,7 +73,7 @@ const OwnerChatView: React.FC<OwnerChatViewProps> = ({ chat, onBack, onRefresh }
 
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold text-gray-800 truncate">{chat.userName}</h2>
-          <p className="text-xs text-red-600 truncate">{chat.qrName} • {chat.qrType}</p>
+          <p className="text-xs text-red-600 truncate">{chat.qrName}</p>
         </div>
       </div>
 

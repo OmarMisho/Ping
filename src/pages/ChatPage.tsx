@@ -107,7 +107,6 @@ const ChatPage: React.FC = () => {
         qr.ownerId,
         qr.qrId,
         qr.name,
-        qr.type,
         user.uid
       );
 
