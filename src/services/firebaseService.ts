@@ -127,11 +127,14 @@ export async function createChatSession(
 ): Promise<string> {
   if (!isFirebaseConfigured()) return '';
 
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 14);
+
   const chatRef = await addDoc(collection(db, 'chats'), {
     ownerUid,
     ownerId,
     qrId,
-    qrName,
+    qrName,              // ← CAR
     visitorId,
     userName: 'Anonymous',
     lastMessage: '',
@@ -140,14 +143,11 @@ export async function createChatSession(
     unreadCount: 0,
     visitorMessageCount: 0,
     createdAt: serverTimestamp(),
-    expiresAt: Timestamp.fromMillis(
-      Date.now() + 14 * 24 * 60 * 60 * 1000
-    ),
+    expiresAt,
   });
 
   return chatRef.id;
 }
-
 
 export async function sendMessageAsUser(chatId: string, text: string): Promise<void> {
   if (!isFirebaseConfigured()) throw new Error('Firebase is not configured.');
