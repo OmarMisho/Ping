@@ -5,6 +5,17 @@ export interface Message {
   timestamp: number;
 }
 
+export interface QrCode {
+  qrId: string;
+  ownerUid: string;
+  ownerId: string;
+  name: string;
+  headline: string;
+  active: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface ChatSession {
   id: string;
   ownerUid: string;
@@ -21,16 +32,6 @@ export interface ChatSession {
   visitorMessageCount: number;
   createdAt: number;
   expiresAt: number;
-}
-
-export interface QrCode {
-  qrId: string;
-  ownerUid: string;
-  ownerId: string;
-  name: string;
-  active: boolean;
-  createdAt: number;
-  updatedAt: number;
 }
 
 export interface EmergencyContact {

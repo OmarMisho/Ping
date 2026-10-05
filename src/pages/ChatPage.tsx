@@ -223,11 +223,9 @@ const ChatPage: React.FC = () => {
           <p className="text-gray-500 text-sm mt-1">Emergency Contact</p>
 
           <div className="mt-10 px-4">
-            <h2 className="text-3xl font-bold text-gray-800 leading-tight">
-              In case of any emergency,
-              <br />
-              <span className="text-red-600">text me.</span>
-            </h2>
+          <h2 className="text-3xl font-bold text-gray-800 leading-tight">
+            {qr.headline}
+          </h2>
 
             <p className="text-gray-500 mt-5 leading-relaxed">
               You can contact the owner through this secure anonymous chat.

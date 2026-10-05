@@ -61,6 +61,7 @@ export async function getQrCode(qrId: string): Promise<QrCode | null> {
     ownerUid: data.ownerUid || '',
     ownerId: data.ownerId || '',
     name: data.name || 'Emergency QR',
+    headline: data.headline || 'In case of emergency scan and text',
     active: data.active !== false,
     createdAt: timestampToMillis(data.createdAt),
     updatedAt: timestampToMillis(data.updatedAt),
