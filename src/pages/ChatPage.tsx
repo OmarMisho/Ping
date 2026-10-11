@@ -22,9 +22,9 @@ import {
 
 const MAX_VISITOR_MESSAGES = 10;
 
-/** Fixed arrival headline. Not driven by the QR. */
-const ARRIVAL_TITLE =
-  'Thank you for finding me! 💛\nPlease help me find my way back to my owner.';
+/** Fixed arrival headline. Not driven by the QR. Each line is sized to fill the column. */
+const ARRIVAL_LINE_1 = 'Thank you for finding me! 💛';
+const ARRIVAL_LINE_2 = 'Please help me find my way back to my owner.';
 
 const ErrorScreen: React.FC<{ title: string; message: string }> = ({
   title,
@@ -235,8 +235,13 @@ const ChatPage: React.FC = () => {
                 <p className="text-xs font-bold tracking-[0.07em] text-founder-deep">
                   YOU SCANNED A FOUNDER QR
                 </p>
-                <h1 className="text-[min(16.6px,calc((100vw_-_48px)/23))] font-bold leading-[1.15] text-ink whitespace-pre-line">
-                  {ARRIVAL_TITLE}
+                <h1 className="font-bold leading-[1.15] text-ink">
+                  <span className="block text-[min(26.5px,calc((100vw_-_48px)/14.4))]">
+                    {ARRIVAL_LINE_1}
+                  </span>
+                  <span className="block text-[min(16.6px,calc((100vw_-_48px)/23))]">
+                    {ARRIVAL_LINE_2}
+                  </span>
                 </h1>
                 <p className="text-[15px] leading-[1.45] text-ink-muted">
                   Send a text to its owner and help their belongings find a way
