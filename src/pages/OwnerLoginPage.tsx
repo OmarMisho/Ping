@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { loginOwner, registerOwner } from '../firebase';
+import BrandMark from '../components/BrandMark';
 
 export default function OwnerLoginPage() {
   const [email, setEmail] = useState('');
@@ -51,29 +52,17 @@ export default function OwnerLoginPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-        background: '#f5f7fa',
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: 400,
-          background: 'white',
-          padding: 30,
-          borderRadius: 16,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-        }}
-      >
-        <h1>SafeReach</h1>
+    <div className="min-h-screen bg-chrome flex items-center justify-center p-5">
+      <div className="w-full max-w-[400px] bg-white border border-line rounded-[20px] p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <BrandMark size={40} />
+          <div>
+            <h1 className="text-lg font-bold text-ink leading-none">Founder</h1>
+            <p className="text-xs text-ink-muted mt-1">Owner access</p>
+          </div>
+        </div>
 
-        <h2>
+        <h2 className="text-xl font-bold text-ink mb-5">
           {isRegistering ? 'Create Owner Account' : 'Owner Login'}
         </h2>
 
@@ -82,12 +71,7 @@ export default function OwnerLoginPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{
-            width: '100%',
-            padding: 12,
-            marginBottom: 12,
-            boxSizing: 'border-box',
-          }}
+          className="w-full px-4 py-3 mb-3 border border-line rounded-xl text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-founder-deep"
         />
 
         <input
@@ -95,33 +79,17 @@ export default function OwnerLoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: '100%',
-            padding: 12,
-            marginBottom: 12,
-            boxSizing: 'border-box',
-          }}
+          className="w-full px-4 py-3 mb-3 border border-line rounded-xl text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-founder-deep"
         />
 
         {error && (
-          <div
-            style={{
-              color: '#c62828',
-              marginBottom: 12,
-            }}
-          >
-            {error}
-          </div>
+          <div className="text-red-600 text-sm mb-3">{error}</div>
         )}
 
         <button
           onClick={handleSubmit}
           disabled={loading}
-          style={{
-            width: '100%',
-            padding: 14,
-            cursor: loading ? 'default' : 'pointer',
-          }}
+          className="w-full py-3.5 bg-founder text-ink rounded-xl font-bold border border-white transition hover:brightness-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading
             ? 'Please wait...'
@@ -135,14 +103,7 @@ export default function OwnerLoginPage() {
             setIsRegistering(!isRegistering);
             setError('');
           }}
-          style={{
-            width: '100%',
-            marginTop: 12,
-            padding: 12,
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-          }}
+          className="w-full mt-3 py-3 bg-transparent border-none text-ink-muted text-sm cursor-pointer hover:text-ink transition-colors"
         >
           {isRegistering
             ? 'Already have an account? Login'

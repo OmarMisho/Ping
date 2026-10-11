@@ -77,11 +77,11 @@ const OwnerChats: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col">
       <div className="bg-white border-b px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-800">Received Chats</h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-ink">Received Chats</h1>
+        <p className="text-ink-muted text-sm mt-1">
           {chats.length} conversation{chats.length !== 1 ? 's' : ''}
           {chats.filter((c) => c.unread).length > 0 && (
-            <span className="ml-2 text-red-600 font-medium">
+            <span className="ml-2 text-founder-deep font-medium">
               ({chats.filter((c) => c.unread).length} unread)
             </span>
           )}
@@ -92,13 +92,13 @@ const OwnerChats: React.FC = () => {
       <div className="flex-1 overflow-y-auto">
         {chats.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-24 h-24 bg-chrome rounded-full flex items-center justify-center mb-4">
+              <svg className="w-12 h-12 text-ink-muted/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-600">No conversations yet</h3>
-            <p className="text-gray-400 mt-2 text-sm">
+            <h3 className="text-lg font-semibold text-ink">No conversations yet</h3>
+            <p className="text-ink-muted mt-2 text-sm">
               When someone starts a chat through your QR code, it will appear here.
             </p>
           </div>
@@ -107,26 +107,26 @@ const OwnerChats: React.FC = () => {
             {chats.map((chat) => (
               <div
                 key={chat.id}
-                className={`px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors ${chat.unread ? 'bg-red-50/50' : ''}`}
+                className={`px-6 py-4 hover:bg-chrome cursor-pointer transition-colors ${chat.unread ? 'bg-founder-soft/60' : ''}`}
                 onClick={() => {
                   setSelectedChat(chat);
                   if (chat.unread) void handleMarkRead(chat.id);
                 }}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${chat.unread ? 'bg-red-500' : 'bg-gray-400'}`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${chat.unread ? 'bg-founder text-ink' : 'bg-chrome text-ink-muted'}`}>
                     {chat.userName.charAt(0).toUpperCase()}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <h3 className={`font-semibold truncate ${chat.unread ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <h3 className="font-semibold truncate text-ink">
                           {chat.userName}
                         </h3>
-                        <p className="text-xs text-red-600 truncate">{chat.qrName}</p>
+                        <p className="text-xs text-founder-deep truncate">{chat.qrName}</p>
                       </div>
-                      <span className="text-xs text-gray-400 flex-shrink-0">
+                      <span className="text-xs text-ink-muted flex-shrink-0">
                         {new Date(chat.lastUpdated).toLocaleDateString([], {
                           month: 'short',
                           day: 'numeric',
@@ -134,19 +134,19 @@ const OwnerChats: React.FC = () => {
                       </span>
                     </div>
 
-                    <p className={`text-sm truncate mt-1 ${chat.unread ? 'text-gray-700 font-medium' : 'text-gray-500'}`}>
+                    <p className={`text-sm truncate mt-1 ${chat.unread ? 'text-ink font-medium' : 'text-ink-muted'}`}>
                       {chat.lastMessage || 'No messages yet'}
                     </p>
                   </div>
 
-                  {chat.unread && <div className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0" />}
+                  {chat.unread && <div className="w-3 h-3 bg-founder-deep rounded-full flex-shrink-0" />}
 
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       void handleDeleteChat(chat.id);
                     }}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                    className="p-2 text-ink-muted hover:text-red-500 transition-colors flex-shrink-0"
                     title="Delete chat"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

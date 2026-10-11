@@ -1,16 +1,39 @@
 @import "tailwindcss";
 
+/*
+ * Founder design tokens.
+ * Values pulled directly from Figma frame "Finder browser · QR arrival" (2:19097).
+ * Using @theme here generates utilities like `bg-founder`, `text-ink`,
+ * `text-ink-muted`, `border-line`, `bg-founder-soft`, `text-founder-deep`.
+ */
+@theme {
+  /* Brand */
+  --color-founder: #f7d94c; /* primary accent */
+  --color-founder-soft: #fff8d9; /* accent tint / notice bg */
+  --color-founder-deep: #8a6b0a; /* accent text on light bg */
+
+  /* Neutrals */
+  --color-ink: #20231e; /* primary text */
+  --color-ink-muted: #55594f; /* secondary text */
+  --color-line: #e7e9e1; /* borders */
+  --color-chrome: #f6f7f3; /* subtle surfaces / inputs */
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
+}
+
 /* Base styles */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,8 +58,13 @@ body {
 
 /* Animation for pulse */
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .animate-pulse-soft {
