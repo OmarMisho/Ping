@@ -22,8 +22,9 @@ import {
 
 const MAX_VISITOR_MESSAGES = 10;
 
-/** Figma default headline, shown when the QR has no owner-configured headline. */
-const DEFAULT_ARRIVAL_TITLE = 'Found something?\nYou’re in the right place.';
+/** Fixed arrival headline. Not driven by the QR. */
+const ARRIVAL_TITLE =
+  'Thank you for finding me 💛\nHelp me find my way home.';
 
 const ErrorScreen: React.FC<{ title: string; message: string }> = ({
   title,
@@ -218,8 +219,6 @@ const ChatPage: React.FC = () => {
    * Arrival screen — Figma "Finder browser · QR arrival" (2:19097)
    * ------------------------------------------------------------------ */
   if (!started) {
-    const title = qr.headline?.trim() ? qr.headline : DEFAULT_ARRIVAL_TITLE;
-
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <AppHeader />
@@ -237,7 +236,7 @@ const ChatPage: React.FC = () => {
                   YOU SCANNED A FOUNDER QR
                 </p>
                 <h1 className="text-[28px] font-bold leading-[1.15] text-ink whitespace-pre-line">
-                  {title}
+                  {ARRIVAL_TITLE}
                 </h1>
                 <p className="text-[15px] leading-[1.45] text-ink-muted">
                   Send a text to its owner and help their belongings find a way
