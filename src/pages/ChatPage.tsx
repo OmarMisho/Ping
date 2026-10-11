@@ -235,7 +235,7 @@ const ChatPage: React.FC = () => {
                 <p className="text-xs font-bold tracking-[0.07em] text-founder-deep">
                   YOU SCANNED A FOUNDER QR
                 </p>
-                <h1 className="text-[28px] font-bold leading-[1.15] text-ink whitespace-pre-line">
+                <h1 className="text-[25px] font-bold leading-[1.15] text-ink whitespace-pre-line">
                   {ARRIVAL_TITLE}
                 </h1>
                 <p className="text-[15px] leading-[1.45] text-ink-muted">
